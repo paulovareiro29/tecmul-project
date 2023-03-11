@@ -8,9 +8,17 @@ export default class LoadScene extends Phaser.Scene {
 
   preload() {
     console.log("Preloading loading scene..");
+
+    this.loadImages()
   }
 
-  create() { }
+  create() {
+    this.scene.start(CONSTANTS.SCENES.MENU)
+  }
 
-  update() { }
+  loadImages() {
+    for (let item in CONSTANTS.IMAGE) {
+      this.load.image(item, `./src/assets/${CONSTANTS.IMAGE[item]}`)
+    }
+  }
 }
