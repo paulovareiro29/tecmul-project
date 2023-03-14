@@ -6,7 +6,6 @@ const CONSTANTS = {
     },
     IMAGE: {
         BACKGROUND: "background.png",
-        LOGO: "logo.png",
         ENEMY: "enemy.png",
         BALL: "ball.png"
     }
