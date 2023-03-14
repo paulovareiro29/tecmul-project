@@ -5,7 +5,7 @@ const CONSTANTS = {
         GAME: "GAME",
     },
     IMAGE: {
-        BACKGROUND: "background.jpg",
+        BACKGROUND: "background.png",
         LOGO: "logo.png",
         ENEMY: "enemy.png",
         BALL: "ball.png"
