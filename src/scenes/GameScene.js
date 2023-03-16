@@ -29,6 +29,8 @@ export default class GameScene extends Phaser.Scene {
       cols: 10
     })
 
+    /* this.grid.showNumbers(); */
+
     for (let i = 0; i < 79; i++) {
       if (i % 2 == 0) this.addEnemy(i, "ENEMY")
     }
@@ -36,28 +38,30 @@ export default class GameScene extends Phaser.Scene {
 
     this.ball = new Ball(this, this.game.renderer.width / 2, this.game.renderer.height - 15)
 
-    this.physics.add.collider(this.ball, this.enemies)
+    this.physics.add.collider(this.ball, this.enemies, this.onEnemyHit)
 
-    this.input.on('pointerdown', (pointer) => this.onMouseClick(this, pointer))
+    this.input.on('pointerdown', (pointer) => this.onMouseClick(pointer))
   }
 
   update() { }
 
-  onMouseClick(scene, pointer) {
+  onMouseClick(pointer) {
     const { x, y } = pointer
     this.ball.fire({ x, y })
   }
 
   addEnemy(position, key) {
-    let enemy = this.physics.add.sprite(0, 0, key)
-    this.enemies.add(enemy)
-    this.grid.placeAtIndex(position, enemy)
-    enemy.setImmovable()
-    Align.scaleToGameW(enemy, .1, this)
+    this.grid.placeAtIndex(position, new Enemy(this, key, this.enemies))
+  }
+
+  onEnemyHit(ball, enemy) {
+    enemy.onHit(ball.getPower())
   }
 }
 
 class Ball extends Phaser.GameObjects.Sprite {
+  power = 50
+
   constructor(scene, x, y) {
     super(scene, x, y, 'BALL')
 
@@ -77,4 +81,35 @@ class Ball extends Phaser.GameObjects.Sprite {
 
     this.body.setVelocity(velocityX, velocityY)
   }
-} 
+
+  getPower() {
+    return this.power
+  }
+}
+
+class Enemy extends Phaser.GameObjects.Sprite {
+  health = 100;
+  group = null;
+  scene = null;
+
+  constructor(scene, key, group) {
+    super(scene, 0, 0, key)
+    this.scene = scene
+    this.group = group
+
+    scene.physics.add.existing(this)
+    scene.add.existing(this)
+    group.add(this)
+    this.body.setImmovable()
+    Align.scaleToGameW(this, .1, scene)
+  }
+
+  onHit(damage) {
+    this.health -= damage;
+    if (this.health <= 0) {
+      this.group.remove(this)
+      this.destroy()
+    }
+
+  }
+}

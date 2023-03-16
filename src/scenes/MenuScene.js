@@ -20,7 +20,7 @@ export default class MenuScene extends Phaser.Scene {
       .setDepth(0)
 
     // Logo
-    this.add.text(this.game.renderer.width / 2, this.game.renderer.height * 0.20, "SPACE SHOOTER")
+    this.add.text(this.game.renderer.width / 2, this.game.renderer.height * 0.20, "BBSpace")
       .setOrigin(0.5)
       .setStyle({
         fill: "#fff",
