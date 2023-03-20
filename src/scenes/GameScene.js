@@ -244,3 +244,20 @@ class Enemy extends Phaser.GameObjects.Sprite {
     this.healthBar.health.width = this.getWidth() * healthPercentage
   }
 }
+
+function togglePower(ball) {
+  const keyM = this.input.keyboard.addKey('m');
+  let isPowerOn = false;
+  
+  keyM.on('down', () => {
+    if (!isPowerOn) {
+      ball.power += 100;
+      console.log(`Ball power: ${ball.power}`);
+      isPowerOn = true;
+    } else {
+      ball.power -= 90;
+      console.log(`Ball power: ${ball.power}`);
+      isPowerOn = false;
+    }
+  });
+}
