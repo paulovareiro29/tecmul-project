@@ -12,7 +12,8 @@ export default class GameScene extends Phaser.Scene {
   enemies = null
   balls = null
 
-  turnStarted = false
+  turn = false
+  level = false
 
   preload() {
     console.log("Preloading game scene..");
@@ -51,22 +52,57 @@ export default class GameScene extends Phaser.Scene {
   update() {
     this.balls.getChildren().forEach((ball) => ball.update())
 
-    if (this.checkIfTurnEnded()) {
+    if (this.checkIfLevelEnded() && !this.levelEnded()) {
+      this.endTurn()
+      this.endLevel()
+    }
+
+    if (this.areBallsOffScreen() && !this.turnEnded()) {
       this.endTurn()
       this.generateBalls()
     }
   }
 
   startTurn() {
-    this.turnStarted = true
+    this.turn = true
   }
 
   endTurn() {
-    this.turnStarted = false
+    this.balls.clear()
+    this.turn = false
   }
 
-  checkIfTurnEnded() {
+  turnEnded() {
+    return !this.turn
+  }
+
+  levelEnded() {
+    return !this.level
+  }
+
+  endLevel() {
+    this.level = false
+
+    this.add.text(this.game.renderer.width / 2, this.game.renderer.height * 0.20, "GAME OVER")
+      .setOrigin(0.5)
+      .setStyle({
+        fill: "#fff",
+        fontSize: 48,
+        fontStyle: "bold",
+        align: "center",
+        wordWrap: {
+          width: this.game.renderer.width * 0.7,
+          useAdvancedWrap: true
+        }
+      })
+  }
+
+  areBallsOffScreen() {
     return this.balls.getChildren().length <= 0
+  }
+
+  checkIfLevelEnded() {
+    return this.enemies.getChildren().length <= 0
   }
 
   generateBalls() {
@@ -82,7 +118,7 @@ export default class GameScene extends Phaser.Scene {
   onMouseClick(pointer) {
     const { x, y } = pointer
 
-    if (this.turnStarted) return;
+    if (this.turn) return;
 
     this.balls.getChildren().forEach((ball, index) => {
       setTimeout(() => ball.fire({ x, y }), index * 60)
@@ -141,28 +177,70 @@ class Ball extends Phaser.GameObjects.Sprite {
 }
 
 class Enemy extends Phaser.GameObjects.Sprite {
+
   health = 100;
+  currentHealth = 0;
   group = null;
   scene = null;
+
+  healthBar = {
+    background: null,
+    health: null
+  };
 
   constructor(scene, key, group) {
     super(scene, 0, 0, key)
     this.scene = scene
     this.group = group
 
+    this.currentHealth = this.health
+
     scene.physics.add.existing(this)
     scene.add.existing(this)
     group.add(this)
     this.body.setImmovable()
     Align.scaleToGameW(this, .1, scene)
+
   }
 
   onHit(damage) {
-    this.health -= damage;
-    if (this.health <= 0) {
+    this.currentHealth -= damage;
+    this.updateHealthBar()
+
+    if (this.currentHealth <= 0) {
       this.group.remove(this)
       this.destroy()
+      if (this.healthBar.background) this.healthBar.background.destroy()
+      if (this.healthBar.health) this.healthBar.health.destroy()
     }
 
+  }
+
+  getX() {
+    return this.body.position.x
+  }
+
+  getY() {
+    return this.body.position.y
+  }
+
+  getWidth() {
+    return this.body.width
+  }
+
+  getHeight() {
+    return this.body.height
+  }
+
+  updateHealthBar() {
+    const x = this.getX() + this.getWidth() / 2
+    const y = this.getY() + this.getHeight()
+    const healthPercentage = this.currentHealth / this.health
+
+
+    if (!this.healthBar.background) this.healthBar.background = this.scene.add.rectangle(x, y, this.getWidth(), 5, 0xff0000)
+    if (!this.healthBar.health) this.healthBar.health = this.scene.add.rectangle(x, y, this.getWidth(), 5, 0x00ff00)
+
+    this.healthBar.health.width = this.getWidth() * healthPercentage
   }
 }
