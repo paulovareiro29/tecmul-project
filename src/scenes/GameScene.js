@@ -10,7 +10,9 @@ export default class GameScene extends Phaser.Scene {
 
   grid = null
   enemies = null
-  ball = null
+  balls = null
+
+  turnStarted = false
 
   preload() {
     console.log("Preloading game scene..");
@@ -23,6 +25,7 @@ export default class GameScene extends Phaser.Scene {
 
   create() {
     this.enemies = this.physics.add.group()
+    this.balls = this.physics.add.group()
     this.grid = new AlignGrid({
       scene: this,
       rows: 17,
@@ -36,18 +39,56 @@ export default class GameScene extends Phaser.Scene {
     }
 
 
-    this.ball = new Ball(this, this.game.renderer.width / 2, this.game.renderer.height - 15)
+    this.generateBalls()
 
-    this.physics.add.collider(this.ball, this.enemies, this.onEnemyHit)
+
+    this.physics.add.collider(this.balls, this.enemies, this.onEnemyHit)
+    this.physics.world.checkCollision.down = false
 
     this.input.on('pointerdown', (pointer) => this.onMouseClick(pointer))
   }
 
-  update() { }
+  update() {
+    this.balls.getChildren().forEach((ball) => ball.update())
+
+    if (this.checkIfTurnEnded()) {
+      this.endTurn()
+      this.generateBalls()
+    }
+  }
+
+  startTurn() {
+    this.turnStarted = true
+  }
+
+  endTurn() {
+    this.turnStarted = false
+  }
+
+  checkIfTurnEnded() {
+    return this.balls.getChildren().length <= 0
+  }
+
+  generateBalls() {
+    for (let i = 0; i < 20; i++) {
+      this.addBall()
+    }
+  }
+
+  addBall() {
+    new Ball(this, this.game.renderer.width / 2, this.game.renderer.height - 15, this.balls)
+  }
 
   onMouseClick(pointer) {
     const { x, y } = pointer
-    this.ball.fire({ x, y })
+
+    if (this.turnStarted) return;
+
+    this.balls.getChildren().forEach((ball, index) => {
+      setTimeout(() => ball.fire({ x, y }), index * 60)
+    })
+
+    this.startTurn()
   }
 
   addEnemy(position, key) {
@@ -60,13 +101,19 @@ export default class GameScene extends Phaser.Scene {
 }
 
 class Ball extends Phaser.GameObjects.Sprite {
-  power = 50
+  power = 10
+  group = null
+  scene = null
 
-  constructor(scene, x, y) {
+  constructor(scene, x, y, group) {
     super(scene, x, y, 'BALL')
+    this.group = group
+    this.scene = scene
 
     scene.physics.add.existing(this)
     scene.add.existing(this)
+
+    group.add(this)
 
     this.body.setBounce(1)
     this.body.setCollideWorldBounds(true)
@@ -84,6 +131,12 @@ class Ball extends Phaser.GameObjects.Sprite {
 
   getPower() {
     return this.power
+  }
+
+  update() {
+    if (this.body.position.y > this.scene.physics.world.bounds.height) {
+      this.group.remove(this)
+    }
   }
 }
 
