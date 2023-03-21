@@ -3,6 +3,19 @@ import CONSTANTS from "../utils/constants";
 import { AlignGrid } from "../utils/utilities/alignGrid";
 import { Align } from "../utils/utilities/align";
 
+const LEVELS = [
+  {
+    enemies: 20,
+    balls: 10,
+    turns: 3
+  },
+  {
+    enemies: 80,
+    balls: 20,
+    turns: 10
+  }
+]
+
 export default class GameScene extends Phaser.Scene {
   constructor() {
     super({ key: CONSTANTS.SCENES.GAME });
@@ -12,11 +25,12 @@ export default class GameScene extends Phaser.Scene {
   enemies = null
   balls = null
 
-  turn = false
-  level = false
+  hasStartedTurn = false
+  isGameOver = false
+  currentLevel = 0
+  currentTurn = 0
 
   preload() {
-    console.log("Preloading game scene..");
     this.add.image(0, 0, "BACKGROUND")
       .setDisplaySize(this.game.renderer.width, this.game.renderer.height)
       .setInteractive({ useHandCursor: false })
@@ -33,14 +47,7 @@ export default class GameScene extends Phaser.Scene {
       cols: 10
     })
 
-    /* this.grid.showNumbers(); */
-
-    for (let i = 0; i < 79; i++) {
-      if (i % 2 == 0) this.addEnemy(i, "ENEMY")
-    }
-
-
-    this.generateBalls()
+    this.generateCurrentLevel()
 
 
     this.physics.add.collider(this.balls, this.enemies, this.onEnemyHit)
@@ -50,38 +57,41 @@ export default class GameScene extends Phaser.Scene {
   }
 
   update() {
+    if (this.isGameOver) return
+
     this.balls.getChildren().forEach((ball) => ball.update())
 
-    if (this.checkIfLevelEnded() && !this.levelEnded()) {
-      this.endTurn()
-      this.endLevel()
+    if (this.areAllEnemiesDead()) {
+      this.nextLevel()
     }
 
-    if (this.areBallsOffScreen() && !this.turnEnded()) {
-      this.endTurn()
-      this.generateBalls()
+    if (this.areBallsOffScreen() && !this.isGameOver) {
+      this.restartTurn()
     }
   }
 
   startTurn() {
-    this.turn = true
+    this.hasStartedTurn = true
   }
 
   endTurn() {
-    this.balls.clear()
-    this.turn = false
+    this.clearBalls()
+    this.hasStartedTurn = false
   }
 
-  turnEnded() {
-    return !this.turn
+  restartTurn() {
+    this.endTurn()
+    this.generateBalls()
+    this.currentTurn++
+
+    if (this.currentTurn >= LEVELS[this.currentLevel].turns) this.endGame()
   }
 
-  levelEnded() {
-    return !this.level
-  }
+  endGame() {
+    this.clearAll()
+    this.hasStartedTurn = false
+    this.isGameOver = true
 
-  endLevel() {
-    this.level = false
 
     this.add.text(this.game.renderer.width / 2, this.game.renderer.height * 0.20, "GAME OVER")
       .setOrigin(0.5)
@@ -97,18 +107,52 @@ export default class GameScene extends Phaser.Scene {
       })
   }
 
+  nextLevel() {
+    this.endTurn()
+    this.currentLevel++;
+
+    if (this.currentLevel >= LEVELS.length) return this.endGame()
+
+    this.generateCurrentLevel()
+  }
+
+  areAllEnemiesDead() {
+    return this.enemies.getChildren().length <= 0
+  }
+
   areBallsOffScreen() {
     return this.balls.getChildren().length <= 0
   }
 
-  checkIfLevelEnded() {
-    return this.enemies.getChildren().length <= 0
+  generateCurrentLevel() {
+    this.generateBalls()
+    this.generateEnemies()
   }
 
   generateBalls() {
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < LEVELS[this.currentLevel].balls; i++) {
       this.addBall()
     }
+  }
+
+  generateEnemies() {
+    // TODO: Generate in map randomly
+    for (let i = 0; i < LEVELS[this.currentLevel].enemies; i++) {
+      if (i % 2 == 0) this.addEnemy(i, "ENEMY")
+    }
+  }
+
+  clearBalls() {
+    this.balls.clear(true, true)
+  }
+
+  clearEnemies() {
+    this.enemies.clear(true, true)
+  }
+
+  clearAll() {
+    this.clearBalls()
+    this.clearEnemies()
   }
 
   addBall() {
@@ -118,7 +162,7 @@ export default class GameScene extends Phaser.Scene {
   onMouseClick(pointer) {
     const { x, y } = pointer
 
-    if (this.turn) return;
+    if (this.hasStartedTurn || this.isGameOver) return;
 
     this.balls.getChildren().forEach((ball, index) => {
       setTimeout(() => ball.fire({ x, y }), index * 60)
