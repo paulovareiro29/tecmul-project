@@ -3,18 +3,7 @@ import CONSTANTS from "../utils/constants";
 import { AlignGrid } from "../utils/utilities/alignGrid";
 import { Align } from "../utils/utilities/align";
 
-const LEVELS = [
-  {
-    enemies: 20,
-    balls: 10,
-    turns: 3
-  },
-  {
-    enemies: 80,
-    balls: 20,
-    turns: 10
-  }
-]
+import LEVELS from "../utils/levels"
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
@@ -84,7 +73,7 @@ export default class GameScene extends Phaser.Scene {
     this.generateBalls()
     this.currentTurn++
 
-    if (this.currentTurn >= LEVELS[this.currentLevel].turns) this.endGame()
+    if (this.currentTurn >= LEVELS[this.currentLevel].maxTurns) this.endGame()
   }
 
   endGame() {
@@ -130,15 +119,17 @@ export default class GameScene extends Phaser.Scene {
   }
 
   generateBalls() {
-    for (let i = 0; i < LEVELS[this.currentLevel].balls; i++) {
-      this.addBall()
+    const level = LEVELS[this.currentLevel]
+    for (let i = 0; i < level.ballsPerTurn; i++) {
+      this.addBall(level.ballPower)
     }
   }
 
   generateEnemies() {
     // TODO: Generate in map randomly
-    for (let i = 0; i < LEVELS[this.currentLevel].enemies; i++) {
-      if (i % 2 == 0) this.addEnemy(i, "ENEMY")
+    const level = LEVELS[this.currentLevel]
+    for (let i = 0; i < level.totalEnemies; i++) {
+      this.addEnemy(i, "ENEMY", level.enemyHealth)
     }
   }
 
@@ -155,8 +146,8 @@ export default class GameScene extends Phaser.Scene {
     this.clearEnemies()
   }
 
-  addBall() {
-    new Ball(this, this.game.renderer.width / 2, this.game.renderer.height - 15, this.balls)
+  addBall(power) {
+    new Ball(this, this.game.renderer.width / 2, this.game.renderer.height - 15, this.balls, power)
   }
 
   onMouseClick(pointer) {
@@ -171,8 +162,8 @@ export default class GameScene extends Phaser.Scene {
     this.startTurn()
   }
 
-  addEnemy(position, key) {
-    this.grid.placeAtIndex(position, new Enemy(this, key, this.enemies))
+  addEnemy(position, key, health) {
+    this.grid.placeAtIndex(position, new Enemy(this, key, this.enemies, health))
   }
 
   onEnemyHit(ball, enemy) {
@@ -185,10 +176,12 @@ class Ball extends Phaser.GameObjects.Sprite {
   group = null
   scene = null
 
-  constructor(scene, x, y, group) {
+  constructor(scene, x, y, group, power) {
     super(scene, x, y, 'BALL')
     this.group = group
     this.scene = scene
+
+    this.power = power
 
     scene.physics.add.existing(this)
     scene.add.existing(this)
@@ -232,12 +225,13 @@ class Enemy extends Phaser.GameObjects.Sprite {
     health: null
   };
 
-  constructor(scene, key, group) {
+  constructor(scene, key, group, health) {
     super(scene, 0, 0, key)
     this.scene = scene
     this.group = group
 
-    this.currentHealth = this.health
+    this.health = health
+    this.currentHealth = health
 
     scene.physics.add.existing(this)
     scene.add.existing(this)
