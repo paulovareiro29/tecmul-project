@@ -126,10 +126,16 @@ export default class GameScene extends Phaser.Scene {
   }
 
   generateEnemies() {
-    // TODO: Generate in map randomly
     const level = LEVELS[this.currentLevel]
+
+    const availableSpaces = new Array(99).fill(1).map((_, i) => ++i).filter((i) => i >= 10)
+
     for (let i = 0; i < level.totalEnemies; i++) {
-      this.addEnemy(i, "ENEMY", level.enemyHealth)
+      const index = Math.floor(Math.random() * availableSpaces.length);
+      const position = availableSpaces[index]
+
+      availableSpaces.splice(index, 1)
+      this.addEnemy(position, "ENEMY", level.enemyHealth)
     }
   }
 
