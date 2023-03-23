@@ -19,6 +19,8 @@ export default class GameScene extends Phaser.Scene {
   currentLevel = 0
   currentTurn = 0
 
+  isPowerOn = false
+
   preload() {
     this.add.image(0, 0, "BACKGROUND")
       .setDisplaySize(this.game.renderer.width, this.game.renderer.height)
@@ -38,11 +40,12 @@ export default class GameScene extends Phaser.Scene {
 
     this.generateCurrentLevel()
 
-
-    this.physics.add.collider(this.balls, this.enemies, this.onEnemyHit)
+    this.physics.add.collider(this.balls, this.enemies, (ball, enemy) => { this.onEnemyHit(ball, enemy, this) })
     this.physics.world.checkCollision.down = false
 
     this.input.on('pointerdown', (pointer) => this.onMouseClick(pointer))
+
+    this.loadCheats()
   }
 
   update() {
@@ -173,8 +176,13 @@ export default class GameScene extends Phaser.Scene {
     this.grid.placeAtIndex(position, new Enemy(this, key, this.enemies, health))
   }
 
-  onEnemyHit(ball, enemy) {
-    enemy.onHit(ball.getPower())
+  onEnemyHit(ball, enemy, game) {
+    enemy.onHit(game.isPowerOn ? enemy.health : ball.getPower())
+  }
+
+  loadCheats() {
+    const keyM = this.input.keyboard.addKey('m')
+    keyM.on('down', () => this.isPowerOn = !this.isPowerOn)
   }
 }
 
