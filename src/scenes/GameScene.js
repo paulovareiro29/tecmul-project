@@ -144,6 +144,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   clearEnemies() {
+    this.enemies.getChildren().forEach(enemy => enemy.destroyHealthBars())
     this.enemies.clear(true, true)
   }
 
@@ -286,5 +287,10 @@ class Enemy extends Phaser.GameObjects.Sprite {
     if (!this.healthBar.health) this.healthBar.health = this.scene.add.rectangle(x, y, this.getWidth(), 5, 0x00ff00)
 
     this.healthBar.health.width = this.getWidth() * healthPercentage
+  }
+
+  destroyHealthBars() {
+    this.healthBar.background?.destroy()
+    this.healthBar.health?.destroy()
   }
 }
