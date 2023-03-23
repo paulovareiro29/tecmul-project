@@ -3,6 +3,8 @@ import CONSTANTS from "../utils/constants";
 import { AlignGrid } from "../utils/utilities/alignGrid";
 import { Align } from "../utils/utilities/align";
 
+import LEVELS from "../utils/levels"
+
 export default class GameScene extends Phaser.Scene {
   constructor() {
     super({ key: CONSTANTS.SCENES.GAME });
@@ -12,12 +14,14 @@ export default class GameScene extends Phaser.Scene {
   enemies = null
   balls = null
 
-  turn = false
-  level = false
+  hasStartedTurn = false
+  isGameOver = false
+  currentLevel = 0
+  currentTurn = 0
+
   isPowerOn = false
 
   preload() {
-    console.log("Preloading game scene..");
     this.add.image(0, 0, "BACKGROUND")
       .setDisplaySize(this.game.renderer.width, this.game.renderer.height)
       .setInteractive({ useHandCursor: false })
@@ -34,17 +38,9 @@ export default class GameScene extends Phaser.Scene {
       cols: 10
     })
 
-    /* this.grid.showNumbers(); */
+    this.generateCurrentLevel()
 
-    for (let i = 0; i < 79; i++) {
-      if (i % 2 == 0) this.addEnemy(i, "ENEMY")
-    }
-
-
-    this.generateBalls()
-
-
-    this.physics.add.collider(this.balls, this.enemies,(ball, enemy) => {this.onEnemyHit(ball, enemy, this)})
+    this.physics.add.collider(this.balls, this.enemies, (ball, enemy) => { this.onEnemyHit(ball, enemy, this) })
     this.physics.world.checkCollision.down = false
 
     this.input.on('pointerdown', (pointer) => this.onMouseClick(pointer))
@@ -53,38 +49,41 @@ export default class GameScene extends Phaser.Scene {
   }
 
   update() {
+    if (this.isGameOver) return
+
     this.balls.getChildren().forEach((ball) => ball.update())
 
-    if (this.checkIfLevelEnded() && !this.levelEnded()) {
-      this.endTurn()
-      this.endLevel()
+    if (this.areAllEnemiesDead()) {
+      this.nextLevel()
     }
 
-    if (this.areBallsOffScreen() && !this.turnEnded()) {
-      this.endTurn()
-      this.generateBalls()
+    if (this.areBallsOffScreen() && !this.isGameOver) {
+      this.restartTurn()
     }
   }
 
   startTurn() {
-    this.turn = true
+    this.hasStartedTurn = true
   }
 
   endTurn() {
-    this.balls.clear()
-    this.turn = false
+    this.clearBalls()
+    this.hasStartedTurn = false
   }
 
-  turnEnded() {
-    return !this.turn
+  restartTurn() {
+    this.endTurn()
+    this.generateBalls()
+    this.currentTurn++
+
+    if (this.currentTurn >= LEVELS[this.currentLevel].maxTurns) this.endGame()
   }
 
-  levelEnded() {
-    return !this.level
-  }
+  endGame() {
+    this.clearAll()
+    this.hasStartedTurn = false
+    this.isGameOver = true
 
-  endLevel() {
-    this.level = false
 
     this.add.text(this.game.renderer.width / 2, this.game.renderer.height * 0.20, "GAME OVER")
       .setOrigin(0.5)
@@ -100,28 +99,71 @@ export default class GameScene extends Phaser.Scene {
       })
   }
 
+  nextLevel() {
+    this.endTurn()
+    this.currentLevel++;
+
+    if (this.currentLevel >= LEVELS.length) return this.endGame()
+
+    this.generateCurrentLevel()
+  }
+
+  areAllEnemiesDead() {
+    return this.enemies.getChildren().length <= 0
+  }
+
   areBallsOffScreen() {
     return this.balls.getChildren().length <= 0
   }
 
-  checkIfLevelEnded() {
-    return this.enemies.getChildren().length <= 0
+  generateCurrentLevel() {
+    this.generateBalls()
+    this.generateEnemies()
   }
 
   generateBalls() {
-    for (let i = 0; i < 20; i++) {
-      this.addBall()
+    const level = LEVELS[this.currentLevel]
+    for (let i = 0; i < level.ballsPerTurn; i++) {
+      this.addBall(level.ballPower)
     }
   }
 
-  addBall() {
-    new Ball(this, this.game.renderer.width / 2, this.game.renderer.height - 15, this.balls)
+  generateEnemies() {
+    const level = LEVELS[this.currentLevel]
+
+    const availableSpaces = new Array(99).fill(1).map((_, i) => ++i).filter((i) => i >= 10)
+
+    for (let i = 0; i < level.totalEnemies; i++) {
+      const index = Math.floor(Math.random() * availableSpaces.length);
+      const position = availableSpaces[index]
+
+      availableSpaces.splice(index, 1)
+      this.addEnemy(position, "ENEMY", level.enemyHealth)
+    }
+  }
+
+  clearBalls() {
+    this.balls.clear(true, true)
+  }
+
+  clearEnemies() {
+    this.enemies.getChildren().forEach(enemy => enemy.destroyHealthBars())
+    this.enemies.clear(true, true)
+  }
+
+  clearAll() {
+    this.clearBalls()
+    this.clearEnemies()
+  }
+
+  addBall(power) {
+    new Ball(this, this.game.renderer.width / 2, this.game.renderer.height - 15, this.balls, power)
   }
 
   onMouseClick(pointer) {
     const { x, y } = pointer
 
-    if (this.turn) return;
+    if (this.hasStartedTurn || this.isGameOver) return;
 
     this.balls.getChildren().forEach((ball, index) => {
       setTimeout(() => ball.fire({ x, y }), index * 60)
@@ -130,20 +172,17 @@ export default class GameScene extends Phaser.Scene {
     this.startTurn()
   }
 
-  addEnemy(position, key) {
-    this.grid.placeAtIndex(position, new Enemy(this, key, this.enemies))
+  addEnemy(position, key, health) {
+    this.grid.placeAtIndex(position, new Enemy(this, key, this.enemies, health))
   }
 
   onEnemyHit(ball, enemy, game) {
     enemy.onHit(game.isPowerOn ? enemy.health : ball.getPower())
   }
-  
-  loadCheats(){
+
+  loadCheats() {
     const keyM = this.input.keyboard.addKey('m')
-    keyM.on('down', () => {
-      console.log("M key pressed")
-      this.isPowerOn =!this.isPowerOn
-    })
+    keyM.on('down', () => this.isPowerOn = !this.isPowerOn)
   }
 }
 
@@ -152,10 +191,12 @@ class Ball extends Phaser.GameObjects.Sprite {
   group = null
   scene = null
 
-  constructor(scene, x, y, group) {
+  constructor(scene, x, y, group, power) {
     super(scene, x, y, 'BALL')
     this.group = group
     this.scene = scene
+
+    this.power = power
 
     scene.physics.add.existing(this)
     scene.add.existing(this)
@@ -174,8 +215,6 @@ class Ball extends Phaser.GameObjects.Sprite {
     const velocityY = speed * Math.sin(angle)
 
     this.body.setVelocity(velocityX, velocityY)
-
-    
   }
 
   getPower() {
@@ -201,12 +240,13 @@ class Enemy extends Phaser.GameObjects.Sprite {
     health: null
   };
 
-  constructor(scene, key, group) {
+  constructor(scene, key, group, health) {
     super(scene, 0, 0, key)
     this.scene = scene
     this.group = group
 
-    this.currentHealth = this.health
+    this.health = health
+    this.currentHealth = health
 
     scene.physics.add.existing(this)
     scene.add.existing(this)
@@ -255,5 +295,10 @@ class Enemy extends Phaser.GameObjects.Sprite {
     if (!this.healthBar.health) this.healthBar.health = this.scene.add.rectangle(x, y, this.getWidth(), 5, 0x00ff00)
 
     this.healthBar.health.width = this.getWidth() * healthPercentage
+  }
+
+  destroyHealthBars() {
+    this.healthBar.background?.destroy()
+    this.healthBar.health?.destroy()
   }
 }
