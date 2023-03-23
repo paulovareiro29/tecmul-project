@@ -14,6 +14,7 @@ export default class GameScene extends Phaser.Scene {
 
   turn = false
   level = false
+  isPowerOn = false
 
   preload() {
     console.log("Preloading game scene..");
@@ -43,10 +44,12 @@ export default class GameScene extends Phaser.Scene {
     this.generateBalls()
 
 
-    this.physics.add.collider(this.balls, this.enemies, this.onEnemyHit)
+    this.physics.add.collider(this.balls, this.enemies,(ball, enemy) => {this.onEnemyHit(ball, enemy, this)})
     this.physics.world.checkCollision.down = false
 
     this.input.on('pointerdown', (pointer) => this.onMouseClick(pointer))
+
+    this.loadCheats()
   }
 
   update() {
@@ -131,8 +134,16 @@ export default class GameScene extends Phaser.Scene {
     this.grid.placeAtIndex(position, new Enemy(this, key, this.enemies))
   }
 
-  onEnemyHit(ball, enemy) {
-    enemy.onHit(ball.getPower())
+  onEnemyHit(ball, enemy, game) {
+    enemy.onHit(game.isPowerOn ? enemy.health : ball.getPower())
+  }
+  
+  loadCheats(){
+    const keyM = this.input.keyboard.addKey('m')
+    keyM.on('down', () => {
+      console.log("M key pressed")
+      this.isPowerOn =!this.isPowerOn
+    })
   }
 }
 
@@ -163,6 +174,8 @@ class Ball extends Phaser.GameObjects.Sprite {
     const velocityY = speed * Math.sin(angle)
 
     this.body.setVelocity(velocityX, velocityY)
+
+    
   }
 
   getPower() {
@@ -243,21 +256,4 @@ class Enemy extends Phaser.GameObjects.Sprite {
 
     this.healthBar.health.width = this.getWidth() * healthPercentage
   }
-}
-
-function togglePower(ball) {
-  const keyM = this.input.keyboard.addKey('m');
-  let isPowerOn = false;
-  
-  keyM.on('down', () => {
-    if (!isPowerOn) {
-      ball.power += 100;
-      console.log(`Ball power: ${ball.power}`);
-      isPowerOn = true;
-    } else {
-      ball.power -= 90;
-      console.log(`Ball power: ${ball.power}`);
-      isPowerOn = false;
-    }
-  });
 }
