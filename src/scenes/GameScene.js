@@ -11,15 +11,22 @@ export default class GameScene extends Phaser.Scene {
     super({ key: CONSTANTS.SCENES.GAME });
   }
 
+  /* ENTITIES */
   grid = null
   enemies = null
   balls = null
 
+  /* GAME LOGIC */
   hasStartedTurn = false
   isGameOver = false
   currentLevel = 0
   currentTurn = 0
+  score = 0
 
+  /* GUI LOGIC */
+  gui = null
+
+  /* CHEATS */
   isPowerOn = false
 
   preload() {
@@ -47,6 +54,9 @@ export default class GameScene extends Phaser.Scene {
     this.input.on('pointerup', (pointer) => this.onMouseClick(pointer))
 
     this.loadCheats()
+
+    this.gui = new GUI(this)
+    this.updateGUI()
   }
 
   update() {
@@ -65,17 +75,20 @@ export default class GameScene extends Phaser.Scene {
 
   startTurn() {
     this.hasStartedTurn = true
+    this.updateGUI()
   }
 
   endTurn() {
     this.clearBalls()
     this.hasStartedTurn = false
+    this.updateGUI()
   }
 
   restartTurn() {
     this.endTurn()
     this.generateBalls()
     this.currentTurn++
+    this.updateGUI()
 
     if (this.currentTurn >= LEVELS[this.currentLevel].maxTurns) this.endGame()
   }
@@ -181,12 +194,24 @@ export default class GameScene extends Phaser.Scene {
   }
 
   onEnemyHit(ball, enemy, game) {
-    enemy.onHit(game.isPowerOn ? enemy.health : ball.getPower())
+    const damage = game.isPowerOn ? enemy.health : ball.getPower()
+    enemy.onHit(damage)
+    this.addScore(damage)
+  }
+
+  addScore(score) {
+    this.score += score
+    this.updateGUI()
   }
 
   loadCheats() {
     const keyM = this.input.keyboard.addKey('m')
     keyM.on('down', () => this.isPowerOn = !this.isPowerOn)
+  }
+
+  updateGUI() {
+    this.gui.setScore(this.score)
+    this.gui.setTurnsLeft(LEVELS[this.currentLevel].maxTurns - this.currentTurn - (this.hasStartedTurn ? 1 : 0))
   }
 }
 
@@ -304,5 +329,44 @@ class Enemy extends Phaser.GameObjects.Sprite {
   destroyHealthBars() {
     this.healthBar.background?.destroy()
     this.healthBar.health?.destroy()
+  }
+}
+
+class GUI {
+  scene = null
+  width = 0
+  height = 0
+
+  /* ENTITIES */
+  score = null
+  turnsLeft = null
+
+  constructor(scene) {
+    this.scene = scene
+    this.width = this.scene.game.renderer.width
+    this.height = this.scene.game.renderer.height
+
+    this.score = this.text(this.width * 0.02, this.height * 0.88, "Score: 0")
+    this.turnsLeft = this.text(this.width * 0.02, this.height * 0.92, "Turns Left: 0")
+  }
+
+  setScore(score) {
+    this.score.setText(`Score: ${score}`)
+  }
+
+  setTurnsLeft(turns) {
+    this.turnsLeft.setText(`Turns Left: ${turns}`)
+  }
+
+  text(x, y, text) {
+    return this.scene.add.text(x, y, text).setStyle({
+      fill: "#fff",
+      fontSize: 24,
+      fontStyle: "bold",
+      wordWrap: {
+        width: this.width * 0.7,
+        useAdvancedWrap: true
+      }
+    })
   }
 }
