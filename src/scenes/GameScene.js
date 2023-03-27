@@ -4,6 +4,7 @@ import { AlignGrid } from "../utils/utilities/alignGrid";
 import { Align } from "../utils/utilities/align";
 
 import LEVELS from "../utils/levels"
+import { randomBetween } from "../utils/utilities/math";
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
@@ -124,8 +125,10 @@ export default class GameScene extends Phaser.Scene {
 
   generateBalls() {
     const level = LEVELS[this.currentLevel]
+    const position = randomBetween(0, this.game.renderer.width)
+
     for (let i = 0; i < level.ballsPerTurn; i++) {
-      this.addBall(level.ballPower)
+      this.addBall(position, level.ballPower)
     }
   }
 
@@ -135,7 +138,7 @@ export default class GameScene extends Phaser.Scene {
     const availableSpaces = new Array(99).fill(1).map((_, i) => ++i).filter((i) => i >= 10)
 
     for (let i = 0; i < level.totalEnemies; i++) {
-      const index = Math.floor(Math.random() * availableSpaces.length);
+      const index = randomBetween(0, availableSpaces.length)
       const position = availableSpaces[index]
 
       availableSpaces.splice(index, 1)
@@ -157,8 +160,8 @@ export default class GameScene extends Phaser.Scene {
     this.clearEnemies()
   }
 
-  addBall(power) {
-    new Ball(this, this.game.renderer.width / 2, this.game.renderer.height - 15, this.balls, power)
+  addBall(position, power) {
+    new Ball(this, position, this.game.renderer.height - 15, this.balls, power)
   }
 
   onMouseClick(pointer) {
