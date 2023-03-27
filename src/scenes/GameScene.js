@@ -44,7 +44,7 @@ export default class GameScene extends Phaser.Scene {
     this.physics.add.collider(this.balls, this.enemies, (ball, enemy) => { this.onEnemyHit(ball, enemy, this) })
     this.physics.world.checkCollision.down = false
 
-    this.input.on('pointerdown', (pointer) => this.onMouseClick(pointer))
+    this.input.on('pointerup', (pointer) => this.onMouseClick(pointer))
 
     this.loadCheats()
   }
