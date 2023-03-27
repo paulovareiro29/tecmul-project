@@ -101,7 +101,8 @@ export default class GameScene extends Phaser.Scene {
 
   nextLevel() {
     this.endTurn()
-    this.currentLevel++;
+    this.currentLevel++
+    this.currentTurn = 0
 
     if (this.currentLevel >= LEVELS.length) return this.endGame()
 
