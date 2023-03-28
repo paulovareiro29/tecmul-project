@@ -7,6 +7,7 @@ import { randomBetween } from "../utils/utilities/math";
 import GameHUD from "../entities/GUI/GameHUD";
 import { Enemy } from "../entities/Game/Enemy";
 import { Ball } from "../entities/Game/Ball";
+import GameOverHUD from "../entities/GUI/GameOverHUD";
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
@@ -26,7 +27,7 @@ export default class GameScene extends Phaser.Scene {
   score = 0
 
   /* HUD LOGIC */
-  hud = null
+  gameHUD = null
 
   /* CHEATS */
   isPowerOn = false
@@ -47,6 +48,12 @@ export default class GameScene extends Phaser.Scene {
       rows: 17,
       cols: 10
     })
+    this.hasStartedTurn = false
+    this.isGameOver = false
+    this.currentLevel = 0
+    this.currentTurn = 0
+    this.score = 0
+
 
     this.generateCurrentLevel()
 
@@ -57,7 +64,11 @@ export default class GameScene extends Phaser.Scene {
 
     this.loadCheats()
 
-    this.hud = new GameHUD(this)
+    this.gameHUD = new GameHUD(this)
+    this.gameOverHUD = new GameOverHUD(this)
+    this.gameOverHUD.hide()
+
+
     this.updateHUD()
   }
 
@@ -100,8 +111,24 @@ export default class GameScene extends Phaser.Scene {
     this.hasStartedTurn = false
     this.isGameOver = true
 
+    this.gameHUD.hide()
+    this.gameOverHUD.show()
+  }
 
-    this.hud.setGameOver(true)
+  restartGame() {
+    this.clearAll()
+
+    this.isGameOver = false
+    this.hasStartedTurn = false
+    this.currentLevel = 0
+    this.currentTurn = 0
+    this.score = 0
+    this.updateHUD()
+
+    this.generateCurrentLevel()
+
+    this.gameOverHUD.hide()
+    this.gameHUD.show()
   }
 
   nextLevel() {
@@ -201,8 +228,8 @@ export default class GameScene extends Phaser.Scene {
   }
 
   updateHUD() {
-    this.hud.setScore(this.score)
-    this.hud.setTurnsLeft(LEVELS[this.currentLevel].maxTurns - this.currentTurn - (this.hasStartedTurn ? 1 : 0))
+    this.gameOverHUD.setScore(this.score)
+    this.gameHUD.setScore(this.score)
+    this.gameHUD.setTurnsLeft(LEVELS[this.currentLevel].maxTurns - this.currentTurn - (this.hasStartedTurn ? 1 : 0))
   }
 }
-

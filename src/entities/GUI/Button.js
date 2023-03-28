@@ -1,9 +1,8 @@
-export default class Button {
-    instance = null
+export default class Button extends Phaser.GameObjects.Text {
 
-    constructor(scene, x, y, label, callback) {
-        this.instance = scene.add.text(x, y, label)
-            .setOrigin(0.5)
+    constructor(scene, x, y, text, callback) {
+        super(scene, x, y, text)
+        this.setOrigin(0.5)
             .setPadding(30, 10)
             .setStyle({
                 backgroundColor: "#fff",
@@ -14,12 +13,19 @@ export default class Button {
             .setInteractive()
             .on('pointerup', () => callback())
             .on('pointerover', () => {
-                this.instance.setStyle({ fill: "#f39c12" })
+                this.setStyle({ fill: "#f39c12" })
                 scene.input.manager.setCursor({ cursor: 'pointer' })
             })
             .on('pointerout', () => {
-                this.instance.setStyle({ fill: "#111" })
+                this.setStyle({ fill: "#111" })
                 scene.input.manager.resetCursor({ cursor: true })
             })
+
+        scene.add.existing(this)
+    }
+
+    setCallback(callback) {
+        this.removeListener('pointerup')
+        this.on('pointerup', () => callback())
     }
 }

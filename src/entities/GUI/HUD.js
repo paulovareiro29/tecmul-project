@@ -15,15 +15,20 @@ export default class HUD {
     }
 
     addEntities(...entities) {
-        for (const e in entities)
+        for (const e of entities) {
             this.entities.push(e)
+        }
     }
 
     hide() {
-        for (const e in this.entities) e.visible = false
+        for (const e of this.entities)
+            if (e)
+                e.visible = false
     }
 
     show() {
-        for (const e in this.entities) e.visible = true
+        for (const e of this.entities)
+            if (e)
+                e.visible = true
     }
 } 
