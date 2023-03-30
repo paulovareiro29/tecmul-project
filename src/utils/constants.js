@@ -9,7 +9,11 @@ const CONSTANTS = {
         ENEMY: "enemy.png",
         ENEMY2: "enemyship1.png",
         ENEMY3: "enemyship2.png",
-        BALL: "ball.png",
+        BALL: "plasmabullet.png",
+    },
+    SOUND: {
+        LASERGUN: 'lasergun.mp3',
+        EXPLOSION: 'explosion.wav',
     },
     ENEMY: ['ENEMY', 'ENEMY2', 'ENEMY3']
 };
