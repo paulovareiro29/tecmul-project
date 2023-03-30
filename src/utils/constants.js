@@ -7,8 +7,11 @@ const CONSTANTS = {
     IMAGE: {
         BACKGROUND: "background.png",
         ENEMY: "enemy.png",
-        BALL: "ball.png"
-    }
+        ENEMY2: "enemyship1.png",
+        ENEMY3: "enemyship2.png",
+        BALL: "ball.png",
+    },
+    ENEMY: ['ENEMY', 'ENEMY2', 'ENEMY3']
 };
 
 export default CONSTANTS

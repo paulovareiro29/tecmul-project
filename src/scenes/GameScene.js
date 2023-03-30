@@ -173,7 +173,7 @@ export default class GameScene extends Phaser.Scene {
       const position = availableSpaces[index]
 
       availableSpaces.splice(index, 1)
-      this.addEnemy(position, "ENEMY", level.enemyHealth)
+      this.addEnemy(position, CONSTANTS.ENEMY[randomBetween(0, CONSTANTS.ENEMY.length - 1)], level.enemyHealth)
     }
   }
 
