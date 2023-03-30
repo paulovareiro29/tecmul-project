@@ -10,7 +10,8 @@ const CONSTANTS = {
         ENEMY2: "enemyship1.png",
         ENEMY3: "enemyship2.png",
         BALL: "ball.png",
-    }
+    },
+    ENEMY: ['ENEMY', 'ENEMY2', 'ENEMY3']
 };
 
 export default CONSTANTS

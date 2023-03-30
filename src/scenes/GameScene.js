@@ -173,7 +173,7 @@ export default class GameScene extends Phaser.Scene {
       const position = availableSpaces[index]
 
       availableSpaces.splice(index, 1)
-      this.addEnemy(position, Math.random() >= 0.5 ? "ENEMY" : "ENEMY3", level.enemyHealth)
+      this.addEnemy(position, CONSTANTS.ENEMY[randomBetween(0, CONSTANTS.ENEMY.length - 1)], level.enemyHealth)
     }
   }
 
@@ -192,7 +192,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   addBall(position, power) {
-    new Ball(this, position, this.game.renderer.height - 40, this.balls, power)
+    new Ball(this, position, this.game.renderer.height - 15, this.balls, power)
   }
 
   onMouseClick(pointer) {
