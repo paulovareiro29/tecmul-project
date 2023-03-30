@@ -1,24 +1,35 @@
 import Phaser from "phaser";
 import CONSTANTS from "../utils/constants";
 import { AlignGrid } from "../utils/utilities/alignGrid";
-import { Align } from "../utils/utilities/align";
 
 import LEVELS from "../utils/levels"
+import { randomBetween } from "../utils/utilities/math";
+import GameHUD from "../entities/GUI/GameHUD";
+import { Enemy } from "../entities/Game/Enemy";
+import { Ball } from "../entities/Game/Ball";
+import GameOverHUD from "../entities/GUI/GameOverHUD";
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
     super({ key: CONSTANTS.SCENES.GAME });
   }
 
+  /* ENTITIES */
   grid = null
   enemies = null
   balls = null
 
+  /* GAME LOGIC */
   hasStartedTurn = false
   isGameOver = false
   currentLevel = 0
   currentTurn = 0
+  score = 0
 
+  /* HUD LOGIC */
+  gameHUD = null
+
+  /* CHEATS */
   isPowerOn = false
 
   preload() {
@@ -37,15 +48,28 @@ export default class GameScene extends Phaser.Scene {
       rows: 17,
       cols: 10
     })
+    this.hasStartedTurn = false
+    this.isGameOver = false
+    this.currentLevel = 0
+    this.currentTurn = 0
+    this.score = 0
+
 
     this.generateCurrentLevel()
 
     this.physics.add.collider(this.balls, this.enemies, (ball, enemy) => { this.onEnemyHit(ball, enemy, this) })
     this.physics.world.checkCollision.down = false
 
-    this.input.on('pointerdown', (pointer) => this.onMouseClick(pointer))
+    this.input.on('pointerup', (pointer) => this.onMouseClick(pointer))
 
     this.loadCheats()
+
+    this.gameHUD = new GameHUD(this)
+    this.gameOverHUD = new GameOverHUD(this)
+    this.gameOverHUD.hide()
+
+
+    this.updateHUD()
   }
 
   update() {
@@ -64,17 +88,20 @@ export default class GameScene extends Phaser.Scene {
 
   startTurn() {
     this.hasStartedTurn = true
+    this.updateHUD()
   }
 
   endTurn() {
     this.clearBalls()
     this.hasStartedTurn = false
+    this.updateHUD()
   }
 
   restartTurn() {
     this.endTurn()
     this.generateBalls()
     this.currentTurn++
+    this.updateHUD()
 
     if (this.currentTurn >= LEVELS[this.currentLevel].maxTurns) this.endGame()
   }
@@ -84,24 +111,30 @@ export default class GameScene extends Phaser.Scene {
     this.hasStartedTurn = false
     this.isGameOver = true
 
+    this.gameHUD.hide()
+    this.gameOverHUD.show()
+  }
 
-    this.add.text(this.game.renderer.width / 2, this.game.renderer.height * 0.20, "GAME OVER")
-      .setOrigin(0.5)
-      .setStyle({
-        fill: "#fff",
-        fontSize: 48,
-        fontStyle: "bold",
-        align: "center",
-        wordWrap: {
-          width: this.game.renderer.width * 0.7,
-          useAdvancedWrap: true
-        }
-      })
+  restartGame() {
+    this.clearAll()
+
+    this.isGameOver = false
+    this.hasStartedTurn = false
+    this.currentLevel = 0
+    this.currentTurn = 0
+    this.score = 0
+    this.updateHUD()
+
+    this.generateCurrentLevel()
+
+    this.gameOverHUD.hide()
+    this.gameHUD.show()
   }
 
   nextLevel() {
     this.endTurn()
-    this.currentLevel++;
+    this.currentLevel++
+    this.currentTurn = 0
 
     if (this.currentLevel >= LEVELS.length) return this.endGame()
 
@@ -123,8 +156,10 @@ export default class GameScene extends Phaser.Scene {
 
   generateBalls() {
     const level = LEVELS[this.currentLevel]
+    const position = randomBetween(0, this.game.renderer.width)
+
     for (let i = 0; i < level.ballsPerTurn; i++) {
-      this.addBall(level.ballPower)
+      this.addBall(position, level.ballPower)
     }
   }
 
@@ -134,11 +169,11 @@ export default class GameScene extends Phaser.Scene {
     const availableSpaces = new Array(99).fill(1).map((_, i) => ++i).filter((i) => i >= 10)
 
     for (let i = 0; i < level.totalEnemies; i++) {
-      const index = Math.floor(Math.random() * availableSpaces.length);
+      const index = randomBetween(0, availableSpaces.length)
       const position = availableSpaces[index]
 
       availableSpaces.splice(index, 1)
-      this.addEnemy(position, Math.random() >=  0.5 ? "ENEMY" : "ENEMY3", level.enemyHealth)
+      this.addEnemy(position, Math.random() >= 0.5 ? "ENEMY" : "ENEMY3", level.enemyHealth)
     }
   }
 
@@ -156,8 +191,8 @@ export default class GameScene extends Phaser.Scene {
     this.clearEnemies()
   }
 
-  addBall(power) {
-    new Ball(this, this.game.renderer.width / 2, this.game.renderer.height - 40, this.balls, power)
+  addBall(position, power) {
+    new Ball(this, position, this.game.renderer.height - 40, this.balls, power)
   }
 
   onMouseClick(pointer) {
@@ -177,128 +212,24 @@ export default class GameScene extends Phaser.Scene {
   }
 
   onEnemyHit(ball, enemy, game) {
-    enemy.onHit(game.isPowerOn ? enemy.health : ball.getPower())
+    const damage = game.isPowerOn ? enemy.health : ball.getPower()
+    enemy.onHit(damage)
+    this.addScore(damage)
+  }
+
+  addScore(score) {
+    this.score += score
+    this.updateHUD()
   }
 
   loadCheats() {
     const keyM = this.input.keyboard.addKey('m')
     keyM.on('down', () => this.isPowerOn = !this.isPowerOn)
   }
-}
 
-class Ball extends Phaser.GameObjects.Sprite {
-  power = 10
-  group = null
-  scene = null
-
-  constructor(scene, x, y, group, power) {
-    super(scene, x, y, 'BALL')
-    this.group = group
-    this.scene = scene
-
-    this.power = power
-
-    scene.physics.add.existing(this)
-    scene.add.existing(this)
-
-    group.add(this)
-
-    this.body.setBounce(1)
-    this.body.setCollideWorldBounds(true)
-    Align.scaleToGameW(this, 0.05, scene)
-  }
-
-  fire(direction) {
-    const speed = 500;
-    const angle = Phaser.Math.Angle.Between(this.x, this.y, direction.x, direction.y);
-    const velocityX = speed * Math.cos(angle)
-    const velocityY = speed * Math.sin(angle)
-
-    this.body.setVelocity(velocityX, velocityY)
-  }
-
-  getPower() {
-    return this.power
-  }
-
-  update() {
-    if (this.body.position.y > this.scene.physics.world.bounds.height) {
-      this.group.remove(this)
-    }
-  }
-}
-
-class Enemy extends Phaser.GameObjects.Sprite {
-
-  health = 100;
-  currentHealth = 0;
-  group = null;
-  scene = null;
-
-  healthBar = {
-    background: null,
-    health: null
-  };
-
-  constructor(scene, key, group, health) {
-    super(scene, 0, 0, key)
-    this.scene = scene
-    this.group = group
-
-    this.health = health
-    this.currentHealth = health
-
-    scene.physics.add.existing(this)
-    scene.add.existing(this)
-    group.add(this)
-    this.body.setImmovable()
-    Align.scaleToGameW(this, .1, scene)
-
-  }
-
-  onHit(damage) {
-    this.currentHealth -= damage;
-    this.updateHealthBar()
-
-    if (this.currentHealth <= 0) {
-      this.group.remove(this)
-      this.destroy()
-      if (this.healthBar.background) this.healthBar.background.destroy()
-      if (this.healthBar.health) this.healthBar.health.destroy()
-    }
-
-  }
-
-  getX() {
-    return this.body.position.x
-  }
-
-  getY() {
-    return this.body.position.y
-  }
-
-  getWidth() {
-    return this.body.width
-  }
-
-  getHeight() {
-    return this.body.height
-  }
-
-  updateHealthBar() {
-    const x = this.getX() + this.getWidth() / 2
-    const y = this.getY() + this.getHeight()
-    const healthPercentage = this.currentHealth / this.health
-
-
-    if (!this.healthBar.background) this.healthBar.background = this.scene.add.rectangle(x, y, this.getWidth(), 5, 0xff0000)
-    if (!this.healthBar.health) this.healthBar.health = this.scene.add.rectangle(x, y, this.getWidth(), 5, 0x00ff00)
-
-    this.healthBar.health.width = this.getWidth() * healthPercentage
-  }
-
-  destroyHealthBars() {
-    this.healthBar.background?.destroy()
-    this.healthBar.health?.destroy()
+  updateHUD() {
+    this.gameOverHUD.setScore(this.score)
+    this.gameHUD.setScore(this.score)
+    this.gameHUD.setTurnsLeft(LEVELS[this.currentLevel].maxTurns - this.currentTurn - (this.hasStartedTurn ? 1 : 0))
   }
 }
