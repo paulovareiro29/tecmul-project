@@ -1,4 +1,5 @@
 import Align from "../../utils/utilities/align"
+import { numberBetween } from "../../utils/utilities/math"
 
 export class Ball extends Phaser.GameObjects.Sprite {
     power = 10
@@ -24,14 +25,15 @@ export class Ball extends Phaser.GameObjects.Sprite {
 
     fire(direction) {
         const speed = 500;
-        const angle = Phaser.Math.Angle.Between(this.x, this.y, direction.x, direction.y);
+        const angle = numberBetween(-Phaser.Math.Angle.Between(this.x, this.y, direction.x, direction.y), -3.04, -0.1)
+
         const velocityX = speed * Math.cos(angle)
         const velocityY = speed * Math.sin(angle)
 
-        if(this.body)
+        if (this.body)
             this.body.setVelocity(velocityX, velocityY)
-            
-        this.scene.sound.play('LASERGUN', {volume: 0.1})
+
+        this.scene.sound.play('LASERGUN', { volume: 0.1 })
     }
 
     getPower() {

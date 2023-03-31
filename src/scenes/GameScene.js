@@ -3,7 +3,7 @@ import CONSTANTS from "../utils/constants";
 import { AlignGrid } from "../utils/utilities/alignGrid";
 
 import LEVELS from "../utils/levels"
-import { randomBetween } from "../utils/utilities/math";
+import { numberBetween, randomBetween } from "../utils/utilities/math";
 import GameHUD from "../entities/GUI/GameHUD";
 import { Enemy } from "../entities/Game/Enemy";
 import { Ball } from "../entities/Game/Ball";
@@ -165,6 +165,7 @@ export default class GameScene extends Phaser.Scene {
       y: this.game.renderer.height - 15
     }
     this.player.setPosition(position.x, position.y)
+
     for (let i = 0; i < level.ballsPerTurn; i++) {
       this.addBall(position, level.ballPower)
     }
