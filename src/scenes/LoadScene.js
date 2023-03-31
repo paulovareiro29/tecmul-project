@@ -10,15 +10,23 @@ export default class LoadScene extends Phaser.Scene {
     console.log("Preloading loading scene..");
 
     this.loadImages()
+    this.loadSounds()
   }
 
   create() {
     this.scene.start(CONSTANTS.SCENES.MENU)
+    this.sound.play('BACKGROUNDMUSIC', {volume: 1})
   }
 
   loadImages() {
     for (let item in CONSTANTS.IMAGE) {
       this.load.image(item, `./src/assets/${CONSTANTS.IMAGE[item]}`)
+    }
+  }
+
+  loadSounds(){
+    for (let  item in CONSTANTS.SOUND) {
+      this.load.audio(item, `./src/assets/${CONSTANTS.SOUND[item]}`)
     }
   }
 }

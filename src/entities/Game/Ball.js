@@ -28,7 +28,10 @@ export class Ball extends Phaser.GameObjects.Sprite {
         const velocityX = speed * Math.cos(angle)
         const velocityY = speed * Math.sin(angle)
 
-        this.body.setVelocity(velocityX, velocityY)
+        if(this.body)
+            this.body.setVelocity(velocityX, velocityY)
+            
+        this.scene.sound.play('LASERGUN', {volume: 0.1})
     }
 
     getPower() {

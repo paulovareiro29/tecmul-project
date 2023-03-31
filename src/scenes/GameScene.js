@@ -139,6 +139,7 @@ export default class GameScene extends Phaser.Scene {
     if (this.currentLevel >= LEVELS.length) return this.endGame()
 
     this.generateCurrentLevel()
+    this.updateHUD()
   }
 
   areAllEnemiesDead() {
