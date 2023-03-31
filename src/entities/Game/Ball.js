@@ -31,7 +31,7 @@ export class Ball extends Phaser.GameObjects.Sprite {
         if(this.body)
             this.body.setVelocity(velocityX, velocityY)
             
-        this.scene.sound.play('LASERGUN')
+        this.scene.sound.play('LASERGUN', {volume: 0.1})
     }
 
     getPower() {

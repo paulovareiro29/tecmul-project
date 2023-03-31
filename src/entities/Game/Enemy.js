@@ -36,7 +36,7 @@ export class Enemy extends Phaser.GameObjects.Sprite {
             if (this.healthBar.background) this.healthBar.background.destroy()
             if (this.healthBar.health) this.healthBar.health.destroy()
 
-            this.scene.sound.play('EXPLOSION')
+            this.scene.sound.play('EXPLOSION', {volume: 0.1})
             this.group.remove(this)
             this.destroy()
         }
