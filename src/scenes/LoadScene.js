@@ -15,7 +15,7 @@ export default class LoadScene extends Phaser.Scene {
 
   create() {
     this.scene.start(CONSTANTS.SCENES.MENU)
-    this.sound.play('BACKGROUNDMUSIC', {volume: 1})
+    this.sound.play('BACKGROUNDMUSIC', { volume: 0.1 })
   }
 
   loadImages() {
@@ -24,8 +24,8 @@ export default class LoadScene extends Phaser.Scene {
     }
   }
 
-  loadSounds(){
-    for (let  item in CONSTANTS.SOUND) {
+  loadSounds() {
+    for (let item in CONSTANTS.SOUND) {
       this.load.audio(item, `./src/assets/${CONSTANTS.SOUND[item]}`)
     }
   }

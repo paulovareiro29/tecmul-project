@@ -1,4 +1,3 @@
-import Button from "./Button"
 import HUD from "./HUD"
 import Text from "./Text"
 
@@ -11,8 +10,8 @@ export default class GameHUD extends HUD {
     constructor(scene) {
         super(scene)
 
-        this.score = new Text(this.scene, this.width * 0.02, this.height * 0.88, "Score: 0")
-        this.turnsLeft = new Text(this.scene, this.width * 0.02, this.height * 0.92, "Turns Left: 0")
+        this.score = new Text(this.scene, this.width * 0.01, this.height * 0.05, "Score: 0")
+        this.turnsLeft = new Text(this.scene, this.width * 0.01, this.height * 0.01, "Turns Left: 0")
 
 
         this.addEntities(this.score, this.turnsLeft)
