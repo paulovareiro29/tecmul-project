@@ -14,6 +14,7 @@ const CONSTANTS = {
     SOUND: {
         LASERGUN: 'lasergun.mp3',
         EXPLOSION: 'explosion.wav',
+        BACKGROUNDMUSIC: 'An_Empty_Mindful_Size.mp3',
     },
     ENEMY: ['ENEMY', 'ENEMY2', 'ENEMY3']
 };
