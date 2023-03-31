@@ -8,6 +8,7 @@ import GameHUD from "../entities/GUI/GameHUD";
 import { Enemy } from "../entities/Game/Enemy";
 import { Ball } from "../entities/Game/Ball";
 import GameOverHUD from "../entities/GUI/GameOverHUD";
+import { Player } from "../entities/Game/Player";
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
@@ -18,6 +19,7 @@ export default class GameScene extends Phaser.Scene {
   grid = null
   enemies = null
   balls = null
+  player = null
 
   /* GAME LOGIC */
   hasStartedTurn = false
@@ -41,6 +43,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   create() {
+    this.player = new Player(this, 0, 0)
     this.enemies = this.physics.add.group()
     this.balls = this.physics.add.group()
     this.grid = new AlignGrid({
@@ -157,8 +160,11 @@ export default class GameScene extends Phaser.Scene {
 
   generateBalls() {
     const level = LEVELS[this.currentLevel]
-    const position = randomBetween(0, this.game.renderer.width)
-
+    const position = {
+      x: randomBetween(0, this.game.renderer.width),
+      y: this.game.renderer.height - 15
+    }
+    this.player.setPosition(position.x, position.y)
     for (let i = 0; i < level.ballsPerTurn; i++) {
       this.addBall(position, level.ballPower)
     }
@@ -193,7 +199,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   addBall(position, power) {
-    new Ball(this, position, this.game.renderer.height - 15, this.balls, power)
+    new Ball(this, position.x, position.y, this.balls, power)
   }
 
   onMouseClick(pointer) {
