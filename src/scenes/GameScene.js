@@ -34,6 +34,13 @@ export default class GameScene extends Phaser.Scene {
   /* CHEATS */
   isPowerOn = false
 
+  cheatKeys = {
+    'm': () => this.isPowerOn = !this.isPowerOn,
+    's': () => this.nextLevel(),
+    'p': () => this.addScore(1000),
+    't': () => this.addTurn(1)
+  }
+
   preload() {
     this.add.image(0, 0, "BACKGROUND")
       .setDisplaySize(this.game.renderer.width, this.game.renderer.height)
@@ -218,6 +225,11 @@ export default class GameScene extends Phaser.Scene {
     new Ball(this, position.x, position.y, this.balls, power)
   }
 
+  addTurn(quantity = 0) {
+    this.currentTurn -= quantity
+    this.updateHUD()
+  }
+
   onMouseClick(pointer) {
     const { x, y } = pointer
     this.player.clearAim()
@@ -247,8 +259,9 @@ export default class GameScene extends Phaser.Scene {
   }
 
   loadCheats() {
-    const keyM = this.input.keyboard.addKey('m')
-    keyM.on('down', () => this.isPowerOn = !this.isPowerOn)
+    for (let key in this.cheatKeys) {
+      this.input.keyboard.addKey(key).on('up', this.cheatKeys[key])
+    }
   }
 
   updateHUD() {
