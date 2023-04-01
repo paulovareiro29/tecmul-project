@@ -1,13 +1,19 @@
 import Phaser from "phaser";
 import CONSTANTS from "../utils/constants";
+import LoadingHUD from "../entities/GUI/LoadingHUD";
 
 export default class LoadScene extends Phaser.Scene {
   constructor() {
     super({ key: CONSTANTS.SCENES.LOAD });
   }
 
+  /* HUD LOGIC */
+  loadingHUD = null
+
   preload() {
     console.log("Preloading loading scene..");
+
+    this.loadingHUD = new LoadingHUD(this)
 
     this.loadImages()
     this.loadSounds()
