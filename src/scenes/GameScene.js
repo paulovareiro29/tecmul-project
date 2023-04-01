@@ -79,7 +79,7 @@ export default class GameScene extends Phaser.Scene {
     if (this.isGameOver) return
 
     /* UPDATE LOGIC */
-    if (this.input.mousePointer.isDown) {
+    if (this.input.mousePointer.isDown && !this.hasStartedTurn && !this.isGameOver) {
       const { x, y } = this.input.mousePointer
       this.player.aim({ x, y })
     }

@@ -11,7 +11,7 @@ export class Player extends Phaser.GameObjects.Sprite {
         super(scene, x, y, 'PLAYER')
         this.scene = scene
 
-        this.graphics = scene.add.graphics({ lineStyle: { width: 4, color: 0xaa00aa } });
+        this.graphics = scene.add.graphics({ lineStyle: { width: 4, color: 0x00a8ff } });
         this.laser = new Phaser.Geom.Line(x, y, 0, 0)
 
         scene.add.existing(this)
