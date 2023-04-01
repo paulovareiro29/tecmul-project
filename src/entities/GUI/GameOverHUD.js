@@ -10,6 +10,7 @@ export default class GameOverHUD extends HUD {
     restart = null
     exit = null
 
+
     constructor(scene) {
         super(scene)
 
@@ -25,6 +26,10 @@ export default class GameOverHUD extends HUD {
         })
 
         this.addEntities(this.gameover, this.score, this.restart, this.exit)
+    }
+
+    setWon(won) {
+        this.gameover.setText(won ? 'YOU WON' : 'GAME OVER')
     }
 
     setScore(score) {

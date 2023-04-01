@@ -121,6 +121,9 @@ export default class GameScene extends Phaser.Scene {
     this.hasStartedTurn = false
     this.isGameOver = true
 
+
+    if (this.currentLevel >= LEVELS.length) this.gameOverHUD.setWon(true)
+
     this.gameHUD.hide()
     this.gameOverHUD.show()
   }
