@@ -7,3 +7,11 @@ export const numberBetween = (value, min, max) => {
     if (value > max) return max
     return value
 }
+
+export const limitAngle = (angle) => {
+    if (angle > -0.1) {
+        return angle < 1 ? -0.1 : -3.04
+    }
+
+    return angle
+}

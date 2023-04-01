@@ -78,6 +78,13 @@ export default class GameScene extends Phaser.Scene {
   update() {
     if (this.isGameOver) return
 
+    /* UPDATE LOGIC */
+    if (this.input.mousePointer.isDown) {
+      const { x, y } = this.input.mousePointer
+      this.player.aim({ x, y })
+    }
+
+    /* GAME LOGIC */
     this.balls.getChildren().forEach((ball) => ball.update())
 
     if (this.areAllEnemiesDead()) {
@@ -205,6 +212,7 @@ export default class GameScene extends Phaser.Scene {
 
   onMouseClick(pointer) {
     const { x, y } = pointer
+    this.player.clearAim()
 
     if (this.hasStartedTurn || this.isGameOver) return;
 

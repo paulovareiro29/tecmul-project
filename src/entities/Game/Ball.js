@@ -1,4 +1,5 @@
 import Align from "../../utils/utilities/align"
+import { limitAngle } from "../../utils/utilities/math"
 
 export class Ball extends Phaser.GameObjects.Sprite {
     power = 10
@@ -26,9 +27,7 @@ export class Ball extends Phaser.GameObjects.Sprite {
         const speed = 500;
         let angle = Phaser.Math.Angle.Between(this.x, this.y, direction.x, direction.y)
 
-        if (angle > -0.1) {
-            angle = angle < 1 ? -0.1 : -3.04
-        }
+        angle = limitAngle(angle)
 
         const velocityX = speed * Math.cos(angle)
         const velocityY = speed * Math.sin(angle)
