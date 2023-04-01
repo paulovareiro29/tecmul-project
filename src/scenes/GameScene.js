@@ -192,6 +192,10 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
+  clearPlayer() {
+    this.player.destroy()
+  }
+
   clearBalls() {
     this.balls.clear(true, true)
   }
@@ -202,6 +206,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   clearAll() {
+    this.clearPlayer()
     this.clearBalls()
     this.clearEnemies()
   }
