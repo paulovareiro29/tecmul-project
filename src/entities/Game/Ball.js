@@ -1,5 +1,4 @@
 import Align from "../../utils/utilities/align"
-import { numberBetween } from "../../utils/utilities/math"
 
 export class Ball extends Phaser.GameObjects.Sprite {
     power = 10
@@ -25,7 +24,11 @@ export class Ball extends Phaser.GameObjects.Sprite {
 
     fire(direction) {
         const speed = 500;
-        const angle = numberBetween(-Phaser.Math.Angle.Between(this.x, this.y, direction.x, direction.y), -3.04, -0.1)
+        let angle = Phaser.Math.Angle.Between(this.x, this.y, direction.x, direction.y)
+
+        if (angle > -0.1) {
+            angle = angle < 1 ? -0.1 : -3.04
+        }
 
         const velocityX = speed * Math.cos(angle)
         const velocityY = speed * Math.sin(angle)
