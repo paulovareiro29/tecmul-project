@@ -67,7 +67,7 @@ export default class GameScene extends Phaser.Scene {
 
     this.generateCurrentLevel()
 
-    this.physics.add.collider(this.balls, this.enemies, (ball, enemy) => { this.onEnemyHit(ball, enemy, this) })
+    this.physics.add.collider(this.balls, this.enemies, this.onEnemyHit, null, this)
     this.physics.world.checkCollision.down = false
 
     this.input.on('pointerup', (pointer) => this.onMouseClick(pointer))
@@ -247,8 +247,8 @@ export default class GameScene extends Phaser.Scene {
     this.grid.placeAtIndex(position, new Enemy(this, key, this.enemies, health))
   }
 
-  onEnemyHit(ball, enemy, game) {
-    const damage = game.isPowerOn ? enemy.health : ball.getPower()
+  onEnemyHit(ball, enemy) {
+    const damage = this.isPowerOn ? enemy.health : ball.getPower()
     enemy.onHit(damage)
     this.addScore(damage)
   }

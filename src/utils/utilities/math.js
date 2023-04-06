@@ -13,5 +13,9 @@ export const limitAngle = (angle) => {
         return angle < 1 ? -0.1 : -3.04
     }
 
+    if (angle < -3.04) {
+        return -3.04
+    }
+
     return angle
 }
