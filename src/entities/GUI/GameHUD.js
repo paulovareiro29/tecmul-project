@@ -10,11 +10,12 @@ export default class GameHUD extends HUD {
     constructor(scene) {
         super(scene)
 
-        this.score = new Text(this.scene, this.width * 0.01, this.height * 0.05, "Score: 0")
-        this.turnsLeft = new Text(this.scene, this.width * 0.01, this.height * 0.01, "Turns Left: 0")
+        this.level = new Text(this.scene, this.width * 0.01, this.height * 0.01, "Level 0 out of 0")
+        this.turnsLeft = new Text(this.scene, this.width * 0.01, this.height * 0.04, "Turns Left: 0")
+        this.score = new Text(this.scene, this.width * 0.01, this.height * 0.07, "Score: 0")
 
 
-        this.addEntities(this.score, this.turnsLeft)
+        this.addEntities(this.score, this.turnsLeft, this.level)
     }
 
     setScore(score) {
@@ -23,5 +24,9 @@ export default class GameHUD extends HUD {
 
     setTurnsLeft(turns) {
         this.turnsLeft.setText(`Turns Left: ${turns}`)
+    }
+
+    setLevel(current, total) {
+        this.level.setText(`Level ${current} of ${total}`)
     }
 }

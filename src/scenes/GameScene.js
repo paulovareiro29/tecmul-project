@@ -268,5 +268,6 @@ export default class GameScene extends Phaser.Scene {
     this.gameOverHUD.setScore(this.score)
     this.gameHUD.setScore(this.score)
     this.gameHUD.setTurnsLeft(LEVELS[this.currentLevel].maxTurns - this.currentTurn - (this.hasStartedTurn ? 1 : 0))
+    this.gameHUD.setLevel(this.currentLevel, LEVELS.length)
   }
 }
