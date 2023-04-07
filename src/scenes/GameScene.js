@@ -3,7 +3,7 @@ import CONSTANTS from "../utils/constants";
 import { AlignGrid } from "../utils/utilities/alignGrid";
 
 import LEVELS from "../utils/levels"
-import { numberBetween, randomBetween } from "../utils/utilities/math";
+import { randomBetween } from "../utils/utilities/math";
 import GameHUD from "../entities/GUI/GameHUD";
 import { Enemy } from "../entities/Game/Enemy";
 import { Ball } from "../entities/Game/Ball";
@@ -152,6 +152,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   nextLevel() {
+    this.clearEnemies()
     this.endTurn()
     this.currentLevel++
     this.currentTurn = 0
